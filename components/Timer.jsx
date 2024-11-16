@@ -1,14 +1,18 @@
 import React, { Component } from 'react'
 import { Text, View , StyleSheet} from 'react-native'
+import Icons from 'react-native-vector-icons/FontAwesome'
+import Icons2 from 'react-native-vector-icons/Entypo'
 
-export class Timer extends Component {
-  render() {
+const Timer = ()=> {
+  
     return (
         <View style={styles.screen}>
         <Text style={styles.text}>This is the TIMER screen</Text>
+        
+
       </View>
     )
-  }
+  
 }
 
 
