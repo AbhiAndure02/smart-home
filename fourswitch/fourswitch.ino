@@ -2,7 +2,6 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
-#include <Espalexa.h>
 
 
 // Pin Definitions
@@ -30,45 +29,6 @@ const int LED4Switch = 0;  // GPIO0 (D3 on NodeMCU)
 ESP8266WebServer server(80);
 
 
-void controlLED1(uint8_t brightness) {
-  if (brightness == 0) {
-    digitalWrite(LED1, LOW); 
-   
-
-  } else {
-     digitalWrite(LED1, HIGH);
-  }
-}
-void controlLED2(uint8_t brightness) {
-  if (brightness == 0) {
-    digitalWrite(LED2, LOW); 
-   
-
-  } else {
-     digitalWrite(LED2, HIGH);
-  }
-}
-
-void controlLED3(uint8_t brightness) {
-  if (brightness == 0) {
-    digitalWrite(LED3, LOW); 
-   
-
-  } else {
-     digitalWrite(LED3, HIGH);
-  }
-}
-void controlLED4(uint8_t brightness) {
-  if (brightness == 0) {
-    digitalWrite(LED4, LOW); 
-   
-
-  } else {
-     digitalWrite(LED4, HIGH);
-  }
-}
-
-Espalexa espalexa;
 
 
 // WiFi credentials
@@ -144,19 +104,6 @@ void setup() {
   digitalWrite(LED2, readFromEEPROM(LED2_STATE_ADDR));
   digitalWrite(LED3, readFromEEPROM(LED3_STATE_ADDR));
   digitalWrite(LED4, readFromEEPROM(LED4_STATE_ADDR));
-
-
-    espalexa.addDevice("FIRST load", controlLED1);
-    espalexa.addDevice("SECOND load", controlLED2);
-    espalexa.addDevice("THIRD load", controlLED3);
-    espalexa.addDevice("fourth load", controlLED4);
-
-
-
-
-
-      espalexa.begin();
-
 
   
 
@@ -241,8 +188,6 @@ saveToEEPROM(LED4_STATE_ADDR, HIGH);
 
 void loop() {
   server.handleClient();
-    espalexa.loop();
-
 
   static bool prevLED1SwitchState = HIGH;
   static bool prevLED2SwitchState = HIGH;
