@@ -4,17 +4,16 @@
 #include <ESP8266WebServer.h>
 #include <Espalexa.h>
 
-
 // Pin Definitions
-const int LED1 = 13; // LED 1
-const int LED2 = 12; // LED 2
-const int LED3 = 14; // LED 3
-const int LED4 = 16; // LED 
+const int LED1 = 13; 
+const int LED2 = 12; 
+const int LED3 = 14; 
+const int LED4 = 16;
 
-const int LED1Switch = 4;  // GPIO4 (D2 on NodeMCU)
-const int LED2Switch = 5;  // GPIO5 (D1 on NodeMCU)
-const int LED3Switch = 2; // GPIO16 (D0 on NodeMCU)
-const int LED4Switch = 0;  // GPIO0 (D3 on NodeMCU)
+const int LED1Switch = 4;  
+const int LED2Switch = 5;  
+const int LED3Switch = 2;  
+const int LED4Switch = 0;  
 
 #define EEPROM_SIZE 10
 #define LED1_STATE_ADDR 0
@@ -22,61 +21,25 @@ const int LED4Switch = 0;  // GPIO0 (D3 on NodeMCU)
 #define LED3_STATE_ADDR 2
 #define LED4_STATE_ADDR 3
 
-
-
-
-
-
 ESP8266WebServer server(80);
-
-
-void controlLED1(uint8_t brightness) {
-  if (brightness == 0) {
-    digitalWrite(LED1, LOW); 
-   
-
-  } else {
-     digitalWrite(LED1, HIGH);
-  }
-}
-void controlLED2(uint8_t brightness) {
-  if (brightness == 0) {
-    digitalWrite(LED2, LOW); 
-   
-
-  } else {
-     digitalWrite(LED2, HIGH);
-  }
-}
-
-void controlLED3(uint8_t brightness) {
-  if (brightness == 0) {
-    digitalWrite(LED3, LOW); 
-   
-
-  } else {
-     digitalWrite(LED3, HIGH);
-  }
-}
-void controlLED4(uint8_t brightness) {
-  if (brightness == 0) {
-    digitalWrite(LED4, LOW); 
-   
-
-  } else {
-     digitalWrite(LED4, HIGH);
-  }
-}
-
 Espalexa espalexa;
 
+// Wi-Fi credentials (replace with your home network details)
+const char* ssid = "TechInfoSync"; // Your router's SSID
+const char* password = "Admin@1234"; // Your router's password
 
-// WiFi credentials
-const char* ssid = "SmartHome";
-const char* password = "12345678";
-
-
-
+void controlLED1(uint8_t brightness) {
+  digitalWrite(LED1, brightness == 0 ? LOW : HIGH);
+}
+void controlLED2(uint8_t brightness) {
+  digitalWrite(LED2, brightness == 0 ? LOW : HIGH);
+}
+void controlLED3(uint8_t brightness) {
+  digitalWrite(LED3, brightness == 0 ? LOW : HIGH);
+}
+void controlLED4(uint8_t brightness) {
+  digitalWrite(LED4, brightness == 0 ? LOW : HIGH);
+}
 
 void saveToEEPROM(int addr, int value) {
   EEPROM.write(addr, value);
@@ -115,11 +78,10 @@ void handleRoot() {
     </html>
   )rawliteral";
 
-  // Replace placeholders with current state
   html.replace("{{led1State}}", digitalRead(LED1) == HIGH ? "ON" : "OFF");
   html.replace("{{led2State}}", digitalRead(LED2) == HIGH ? "ON" : "OFF");
- html.replace("{{led3State}}", digitalRead(LED3) == HIGH ? "ON" : "OFF");
- html.replace("{{led4State}}", digitalRead(LED4) == HIGH ? "ON" : "OFF");
+  html.replace("{{led3State}}", digitalRead(LED3) == HIGH ? "ON" : "OFF");
+  html.replace("{{led4State}}", digitalRead(LED4) == HIGH ? "ON" : "OFF");
 
   server.send(200, "text/html", html);
 }
@@ -131,45 +93,39 @@ void setup() {
   // Configure pins
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
- pinMode(LED3, OUTPUT);
- pinMode(LED4, OUTPUT);
+  pinMode(LED3, OUTPUT);
+  pinMode(LED4, OUTPUT);
 
   pinMode(LED1Switch, INPUT_PULLUP);
   pinMode(LED2Switch, INPUT_PULLUP);
   pinMode(LED3Switch, INPUT_PULLUP);
   pinMode(LED4Switch, INPUT_PULLUP);
 
-  // Restore states from EEPROM
   digitalWrite(LED1, readFromEEPROM(LED1_STATE_ADDR));
   digitalWrite(LED2, readFromEEPROM(LED2_STATE_ADDR));
   digitalWrite(LED3, readFromEEPROM(LED3_STATE_ADDR));
   digitalWrite(LED4, readFromEEPROM(LED4_STATE_ADDR));
 
+  espalexa.addDevice("First Load", controlLED1);
+  espalexa.addDevice("Second Load", controlLED2);
+  espalexa.addDevice("Third Load", controlLED3);
+  espalexa.addDevice("Fourth Load", controlLED4);
+  espalexa.begin();
 
-    espalexa.addDevice("FIRST load", controlLED1);
-    espalexa.addDevice("SECOND load", controlLED2);
-    espalexa.addDevice("THIRD load", controlLED3);
-    espalexa.addDevice("fourth load", controlLED4);
-
-
-
-
-
-      espalexa.begin();
-
-
-  
-
-  // Set up WiFi and web server
-  WiFi.softAP(ssid, password);
-  Serial.println("Access Point created!");
-  Serial.print("AP IP address: ");
-  Serial.println(WiFi.softAPIP());
+  // Connect to Wi-Fi
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to Wi-Fi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\nConnected to Wi-Fi!");
+  Serial.print("IP Address: ");
+  Serial.println(WiFi.localIP()); // Print the IP address
 
   server.begin();
   Serial.println("Web server started!");
 
-  // Define web server routes
   server.on("/", HTTP_GET, handleRoot);
 
   server.on("/H", []() {
@@ -201,41 +157,16 @@ void setup() {
     digitalWrite(LED3, LOW);
     saveToEEPROM(LED3_STATE_ADDR, LOW);
     handleRoot();
-});
-server.on("/C", []() {
+  });
+  server.on("/C", []() {
     digitalWrite(LED4, HIGH);
-saveToEEPROM(LED4_STATE_ADDR, HIGH);
+    saveToEEPROM(LED4_STATE_ADDR, HIGH);
     handleRoot();
   });
   server.on("/D", []() {
     digitalWrite(LED4, LOW);
     saveToEEPROM(LED4_STATE_ADDR, LOW);
     handleRoot();
-  });
-
-
-   server.on("/LED1State", [] () {
-    int state = digitalRead(LED1);
-    String jsonResponse = "{\"LED1State\": \"" + String(state == HIGH ? "ON" : "OFF") + "\"}";
-    server.send(200, "application/json", jsonResponse);
-  });
-
-  server.on("/LED2State", [] () {
-    int state = digitalRead(LED2);
-    String jsonResponse = "{\"LED2State\": \"" + String(state == HIGH ? "ON" : "OFF") + "\"}";
-    server.send(200, "application/json", jsonResponse);
-  });
-
-  server.on("/LED3State", [] () {
-    int state = digitalRead(LED3);
-    String jsonResponse = "{\"LED3State\": \"" + String(state == HIGH ? "ON" : "OFF") + "\"}";
-    server.send(200, "application/json", jsonResponse);
-  });
-
-  server.on("/LED4State", [] () {
-    int state = digitalRead(LED4);
-    String jsonResponse = "{\"LED1State\": \"" + String(state == HIGH ? "ON" : "OFF") + "\"}";
-    server.send(200, "application/json", jsonResponse);
   });
 }
 
